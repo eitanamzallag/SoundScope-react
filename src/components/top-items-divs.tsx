@@ -114,25 +114,39 @@ export function Recommendations() {
             <h4 className="scroll-m-20 text-2xl font-semibold tracking-tight">A playlist with (very good) recommendations specially made for you is waiting right here... Dare to save it?</h4>
             <Button onClick={() => createRecommendationPlaylist(20)} variant="default">Save Playlist</Button>
             <h4 className="scroll-m-20 text-2xl font-semibold tracking-tight">Your top tags:</h4>
-            <Button onClick={() => getTopTags(20)} variant="default">Get tags</Button>
+            <Button onClick={() => getTopTags(10)} variant="default">Get tags</Button>
         </div>
     )
 }
 
-export function TopArtists() {
+export function TopArtists({ artists }: { artists: Map<string, [string, Set<string>]> }) {
+    const serializedArtists = Array.from(artists.entries()).map(([artistName, [imageUrl, tagsSet]]) => {
+        return {
+            name: artistName,
+            imageUrl: imageUrl,
+            tags: Array.from(tagsSet) // Converts Set<string> -> string[]
+        };
+    });
     return(
         <div className="flex flex-col justify-start">
             <h1 className="scroll-m-20 text-8xl font-extrabold tracking-tight text-balance pb-5">Your top artists: </h1>
-            <TopItems type="artists" />
+            <TopItems topItems={serializedArtists} />
         </div>
     )
 }
 
-export function TopTracks() {
+export function TopTracks({ tracks }: { tracks: Map<string, [string, Set<string>]> }) {
+    const serializedTracks = Array.from(tracks.entries()).map(([artistName, [imageUrl, tagsSet]]) => {
+        return {
+            name: artistName,
+            imageUrl: imageUrl,
+            tags: Array.from(tagsSet) // Converts Set<string> -> string[]
+        };
+    });
     return(
         <div className="flex flex-col justify-start">
             <h1 className="scroll-m-20 text-8xl font-extrabold tracking-tight text-balance pb-5">Your top artists: </h1>
-            <TopItems type="tracks" />
+            <TopItems topItems={serializedTracks} />
         </div>
     )
 }

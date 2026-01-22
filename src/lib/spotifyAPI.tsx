@@ -1,4 +1,4 @@
-import {useEffect, useState} from "react";
+import {JSX, useEffect, useState} from "react";
 import { createRecommendations, getTags } from "./lastfmAPI";
 
 const BASE_URL = "https://api.spotify.com/v1";
@@ -54,49 +54,68 @@ type TopItemsProps = {
     type: string;
 };
 
-export function TopItems({ type }: TopItemsProps) {
-    let count = 0;
-    type itemInfo = [string, Set<string>];
-    const [topItems, setTopItems] = useState<Map<string, itemInfo> | null>(null);
-    useEffect(() => {
-        let topTags;
-        const itemMap = new Map<string, itemInfo>(); // <artist name, [image url, top tags]>
-        const token = sessionStorage.getItem("access_token");
-        if (!token) return;
+export function PreloadItems({ type }: TopItemsProps) {
+    let topTags;
+    const itemMap = new Map<string, [string, Set<string>]>(); // <artist name, [image url, top tags]>
+    const token = sessionStorage.getItem("access_token");
+    if (!token) return;
 
-        getTopItems(type, 20, token).then(async data => {
-            for (let i = 0; i < data.items.length; i++) {
-                // Map artist/track name to image url
-                topTags = await getTags(3, data.items[i].name);
-                console.log(topTags);
+    getTopItems(type, 20, token).then(async data => {
+        console.log(data);
+        for (let i = 0; i < data.items.length; i++) {
+            // Map artist/track name to image url
+            topTags = await getTags(3, data.items[i].name);
+            console.log(topTags);
+            if (type == "tracks") {
+                itemMap.set(data.items[i].name, [data.items[i].album.images[0].url, topTags]);
+            }
+            else if (type == "artists") {
                 itemMap.set(data.items[i].name, [data.items[i].images[0].url, topTags]);
             }
-            setTopItems(itemMap);
-        })
-    }, [type]);
+
+        }
+    })
+    return itemMap;
+}
+
+interface ArtistItem {
+    name: string;
+    imageUrl: string;
+    tags: string[];
+}
+
+export function TopItems({ topItems }: { topItems: ArtistItem[] }) :JSX.Element {
 
     return (
         <div className="flex flex-col flex-grow gap-4 place-content-center">
-            {topItems && Array.from(topItems.entries()).map(([name, [imageUrl, topTags]]) => (
-                <div key={name} className="flex items-center">
-                    <div className="text-lg font-semibold">{count += 1}</div>
-                    <div className="flex grow flex-row justify-between ml-5 p-2 mb-2 bg-[#fdc6ff] border-2 border-black shadow-[4px_4px_0_0_#000]">
+            {/* 1. Map directly over the array. Get 'artist' and 'index' */}
+            {topItems && topItems.map((artist, index) => (
+                <div key={artist.name} className="flex items-center">
+
+                    {/* 2. Use index + 1 for the ranking number */}
+                    <div className="text-lg font-semibold">{index + 1}</div>
+
+                    <div className="flex grow flex-row justify-between ml-5 p-2 mb-2 bg-[#fdc6ff] border-2 border-black">
                         <div className="flex flex-col items-center">
                             <img
-                                src={imageUrl}
-                                alt={name}
+                                src={artist.imageUrl}
+                                alt={artist.name}
                                 className="w-32 h-32 object-cover"
                             />
-                            <div className="text-lg font-semibold">{name}</div>
+                            <div className="text-lg font-semibold">{artist.name}</div>
                         </div>
+
                         <div className="justify-items-center content-center pr-10">
                             <div className="text-sm font-semibold pb-2 text-gray-500">Tags:</div>
                             <div className="flex flex-row">
-                                {topTags && Array.from(topTags).map(tag => (
+
+                                {/* 3. 'tags' is already an array, so just map it directly */}
+                                {artist.tags && artist.tags.map((tag) => (
                                     <div key={tag} className="mr-2 p-2 bg-blue-200 rounded-full">
                                         <div className="text-sm font-semibold">{tag}</div>
                                     </div>
                                 ))}
+
                             </div>
                         </div>
                     </div>

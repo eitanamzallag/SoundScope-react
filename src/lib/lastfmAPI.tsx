@@ -27,7 +27,7 @@ async function getSimilarSong(track: string, artist: string): Promise<string> {
     try {
         const data = await callLastFm("track.getSimilar", { track: track, artist: artist });
         // taking a recommendation from the middle so the recommendations aren't so literal (same artist/album, etc.)
-        const factor = Math.floor(Math.random() * 5) + 3; // random number to divide by so it isn't deterministic. +3 to make sure it's relatively close to the top, otherwise it gives bad recommendations
+        const factor = Math.floor(Math.random() * 5); // random number to divide by so it isn't deterministic. +3 to make sure it's relatively close to the top, otherwise it gives bad recommendations
         const index = Math.floor(data.similartracks.track.length / factor);
         query = data.similartracks.track[index].artist.name + " " + data.similartracks.track[index].name;
     }
@@ -46,12 +46,14 @@ export async function createRecommendations(limit: number) {
     const data = await getTopItems("tracks", limit, token);
     for (let i = 0; i < data.items.length; i++) {
         songsMap.set(data.items[i].artists[0].name, data.items[i].name);
-    }
-
-    for (const [artist, song] of songsMap) {
-        const similar = await getSimilarSong(song, artist);
+        const similar = await getSimilarSong(data.items[i].name, data.items[i].artists[0].name);
         recommendations.push(similar);
     }
+    //
+    // for (const [artist, song] of songsMap) {
+    //     const similar = await getSimilarSong(song, artist);
+    //     recommendations.push(similar);
+    // }
     return recommendations;
 }
 
@@ -81,14 +83,11 @@ export async function getTopTags(limit: number) {
     const data = await getTopItems("tracks", limit, token);
     for (let i = 0; i < data.items.length; i++) {
         songsMap.set(data.items[i].artists[0].name, data.items[i].name);
-    }
-
-    for (const [artist, song] of songsMap) {
         if (tagSet.size < limit) {
-            const songTags = await getTags(3, artist, song);
+            const songTags = await getTags(3, data.items[i].artists[0].name, data.items[i].name);
             tagSet = tagSet.union(songTags);
-        }
-        else { break; }
+        } else { break; }
     }
+    console.log(tagSet);
     return tagSet;
 }
