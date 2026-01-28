@@ -20,9 +20,9 @@ async function getProfile(accessToken: string) {
     return await fetchSpotifyData("/me", accessToken);
 }
 
-export async function getTopItems(type: string, limit: number, accessToken: string) {
+export async function getTopItems(type: string, timeRange: string, limit: number, accessToken: string) {
     // TODO: add time period - 4 weeks etc
-    return await fetchSpotifyData("/me/top/" + type + "?limit=" + limit, accessToken);
+    return await fetchSpotifyData("/me/top/" + type + "?time_range=" + timeRange + "&limit=" + limit, accessToken);
 }
 
 export function UserProfile() {
@@ -52,29 +52,26 @@ export function UserProfile() {
 
 type TopItemsProps = {
     type: string;
+    timeRange: string;
 };
 
-export function PreloadItems({ type }: TopItemsProps) {
-    let topTags;
-    const itemMap = new Map<string, [string, Set<string>]>(); // <artist name, [image url, top tags]>
+export async function PreloadItems({ type, timeRange }: TopItemsProps) {
+    const itemMap = new Map<string, [string, Set<string>]>();
     const token = sessionStorage.getItem("access_token");
-    if (!token) return;
 
-    getTopItems(type, 20, token).then(async data => {
-        console.log(data);
-        for (let i = 0; i < data.items.length; i++) {
-            // Map artist/track name to image url
-            topTags = await getTags(3, data.items[i].name);
-            console.log(topTags);
-            if (type == "tracks") {
-                itemMap.set(data.items[i].name, [data.items[i].album.images[0].url, topTags]);
-            }
-            else if (type == "artists") {
-                itemMap.set(data.items[i].name, [data.items[i].images[0].url, topTags]);
-            }
+    if (!token) return itemMap;
 
-        }
-    })
+    // 1. Await the initial list of artists/tracks
+    const data = await getTopItems(type, timeRange, 20, token);
+
+    // 2. Fetch all tags in parallel for better performance
+    await Promise.all(data.items.map(async (item: any) => { // promise all to load all at once
+        const topTags = await getTags(3, item.name);
+        const imageUrl = type === "tracks" ? item.album.images[0].url : item.images[0].url;
+
+        itemMap.set(item.name, [imageUrl, topTags]);
+    }));
+
     return itemMap;
 }
 
@@ -84,7 +81,7 @@ interface ArtistItem {
     tags: string[];
 }
 
-export function TopItems({ topItems }: { topItems: ArtistItem[] }) :JSX.Element {
+export function TopItems({ topItems }: { topItems: ArtistItem[] }) {
 
     return (
         <div className="flex flex-col flex-grow gap-4 place-content-center">
@@ -136,7 +133,7 @@ export function usePopularity(limit: number) {
             return;
         }
 
-        getTopItems("tracks", limit, token).then(data => {
+        getTopItems("tracks", "medium_term", limit, token).then(data => {
             const items = data.items;
             let total = 0;
             for (let i = 0; i < items.length; i++) {

@@ -1,10 +1,11 @@
 "use client";
 
-import {createRecommendationPlaylist, TopItems, UserProfile} from "../lib/spotifyAPI";
+import {createRecommendationPlaylist, TopItems as TopItemsList, UserProfile} from "../lib/spotifyAPI";
 import {usePopularity} from "../lib/spotifyAPI";
 import {Button} from "@/components/ui/button";
 import {getTopTags} from "../lib/lastfmAPI";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { motion, useMotionValue, useTransform } from "motion/react";
 import { animate } from "motion"
 import { useEffect, useState } from "react";
@@ -119,34 +120,42 @@ export function Recommendations() {
     )
 }
 
-export function TopArtists({ artists }: { artists: Map<string, [string, Set<string>]> }) {
-    const serializedArtists = Array.from(artists.entries()).map(([artistName, [imageUrl, tagsSet]]) => {
+export function TopItems({ items, type }: { items: (Map<string, [string, Set<string>]> | undefined)[], type: string }) {
+    const serializedItemsShort = Array.from(items[0]!.entries()).map(([itemName, [imageUrl, tagsSet]]) => {
         return {
-            name: artistName,
+            name: itemName,
+            imageUrl: imageUrl,
+            tags: Array.from(tagsSet) // Converts Set<string> -> string[]
+        };
+    });
+    const serializedItemsMedium = Array.from(items[1]!.entries()).map(([itemName, [imageUrl, tagsSet]]) => {
+        return {
+            name: itemName,
+            imageUrl: imageUrl,
+            tags: Array.from(tagsSet) // Converts Set<string> -> string[]
+        };
+    });
+    const serializedItemsLong = Array.from(items[2]!.entries()).map(([itemName, [imageUrl, tagsSet]]) => {
+        return {
+            name: itemName,
             imageUrl: imageUrl,
             tags: Array.from(tagsSet) // Converts Set<string> -> string[]
         };
     });
     return(
         <div className="flex flex-col justify-start">
-            <h1 className="scroll-m-20 text-8xl font-extrabold tracking-tight text-balance pb-5">Your top artists: </h1>
-            <TopItems topItems={serializedArtists} />
-        </div>
-    )
-}
+            <h1 className="scroll-m-20 text-8xl font-extrabold tracking-tight text-balance pb-5">Your top {type}: </h1>
 
-export function TopTracks({ tracks }: { tracks: Map<string, [string, Set<string>]> }) {
-    const serializedTracks = Array.from(tracks.entries()).map(([artistName, [imageUrl, tagsSet]]) => {
-        return {
-            name: artistName,
-            imageUrl: imageUrl,
-            tags: Array.from(tagsSet) // Converts Set<string> -> string[]
-        };
-    });
-    return(
-        <div className="flex flex-col justify-start">
-            <h1 className="scroll-m-20 text-8xl font-extrabold tracking-tight text-balance pb-5">Your top artists: </h1>
-            <TopItems topItems={serializedTracks} />
+            <Tabs defaultValue="short">
+                <TabsList>
+                    <TabsTrigger value="short">4 Weeks</TabsTrigger>
+                    <TabsTrigger value="medium">6 Months</TabsTrigger>
+                    <TabsTrigger value="long">1 Year</TabsTrigger>
+                </TabsList>
+                <TabsContent value="short"><TopItemsList topItems={serializedItemsShort} /></TabsContent>
+                <TabsContent value="medium"><TopItemsList topItems={serializedItemsMedium} /></TabsContent>
+                <TabsContent value="long"><TopItemsList topItems={serializedItemsLong} /></TabsContent>
+            </Tabs>
         </div>
     )
 }

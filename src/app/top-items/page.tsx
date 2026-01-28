@@ -2,15 +2,15 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Footer from "@/components/ui/Footer";
-import { Welcome, Popularity, Recommendations, TopArtists, TopTracks } from "@/components/top-items-divs";
+import { Welcome, Popularity, Recommendations, TopItems } from "@/components/top-items-divs";
 import { Button } from "@/components/ui/button";
 import { PreloadItems } from "@/lib/spotifyAPI";
 import {ChartLineIcon, Disc3Icon, HeadphonesIcon, HomeIcon, MicVocalIcon, ScrollTextIcon, UserIcon} from "lucide-react";
 import LightIcon from "next/dist/next-devtools/dev-overlay/icons/light-icon";
 export default function topItems() {
     const [activeIndex, setActiveIndex] = useState(0);
-    const [topArtists, setTopArtists] = useState<Map<string, [string, Set<string>]> | undefined>(undefined);
-    const [topTracks, setTopTracks] = useState<Map<string, [string, Set<string>]> | undefined>(undefined);
+    const [topArtists, setTopArtists] = useState<(Map<string, [string, Set<string>]> | undefined)[]>();
+    const [topTracks, setTopTracks] = useState<(Map<string, [string, Set<string>]> | undefined)[]>();
 
     const texts = [
         [<UserIcon />, "Profile"],
@@ -22,22 +22,46 @@ export default function topItems() {
     ]
 
     useEffect(() => {
+        async function loadAllSpotifyData() {
+            console.log("starting preload");
 
-        console.log("App has loaded. Starting preload...");
-        const artists = PreloadItems({ type: "artists" });
-        const tracks = PreloadItems({ type: "tracks" });
-        setTopArtists(artists);
-        setTopTracks(tracks);
+            try {
+                // define all your data requests as promises
+                const artistPromises = [
+                    PreloadItems({type: "artists", timeRange: "short_term"}),
+                    PreloadItems({ type: "artists", timeRange: "medium_term" }),
+                    PreloadItems({ type: "artists", timeRange: "long_term" })
+                ];
+
+                const trackPromises = [
+                    PreloadItems({ type: "tracks", timeRange: "short_term" }),
+                    PreloadItems({ type: "tracks", timeRange: "medium_term" }),
+                    PreloadItems({ type: "tracks", timeRange: "long_term" })
+                ];
+
+                // wait for all 6 Maps to be fully populated
+                const [artists, tracks] = await Promise.all([
+                    Promise.all(artistPromises),
+                    Promise.all(trackPromises)
+                ]);
+
+                setTopArtists(artists);
+                setTopTracks(tracks);
+            } catch (error) {
+                console.error("Failed to preload items:", error);
+            }
+        }
+
+        loadAllSpotifyData();
     }, []);
 
     const divs = [
         <Welcome />,
         <Popularity />,
         <Recommendations />,
-        <TopArtists artists={topArtists!}/>,
-        <TopTracks tracks={topTracks!} />,
-        // add top songs and summary pages
-    ]
+        topArtists ? <TopItems items={topArtists} type="artists" /> : <div>Loading Artists...</div>,
+        topTracks ? <TopItems items={topTracks} type="tracks" /> : <div>Loading Tracks...</div>,
+    ];
 
     const nextDiv = (index: number) => {
         setActiveIndex(() => (index));
