@@ -72,62 +72,73 @@ export function Popularity() {
     const handleAnimationComplete = () => { setAnimationFinished(true); };
 
     return (
-        <div className="flex flex-col justify-center items-center">
-            <div className="flex flex-row items-center mb-5">
-                <h4 className="scroll-m-20 text-2xl font-semibold tracking-tight">Your popularity score is </h4>
-                <h4 className="scroll-m-20 text-2xl font-semibold tracking-tight pl-4">
+        <div className="flex flex-col justify-center items-center w-full max-w-4xl mx-auto">
+            <div className="flex flex-row items-center mb-8">
+                <h4 className="scroll-m-20 text-3xl font-bold tracking-tight">Your popularity score is </h4>
+                <h4 className="scroll-m-20 text-3xl font-black tracking-tight pl-4">
                     {typeof popularityScore === 'number' ? (
-                        <PopularityAnimation popularity={ popularityScore }
-                                             onComplete={ handleAnimationComplete } />
+                        <PopularityAnimation popularity={popularityScore} onComplete={handleAnimationComplete} />
                     ) : (<div></div>)}
                 </h4>
             </div>
 
             {animationFinished && archetype && description && (
                 <motion.div
-                    initial={{ opacity: 0, scale: 0.5 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{
-                        duration: 0.5,
-                        delay: 0.5,
-                        ease: [0, 0.71, 0.2, 1.01],
-                    }}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, ease: "easeOut" }}
+                    className="w-full mb-10"
                 >
-                    <Card className="text-center">
+                    <Card className="text-center border-4 border-black shadow-[8px_8px_0_0_#000] bg-white">
                         <CardHeader>
-                            <CardTitle>{archetype}</CardTitle>
+                            <CardTitle className="text-3xl font-black">{archetype}</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <p className="leading-7 [&:not(:first-child)]:mt-6">{description}</p>
+                            <p className="text-lg font-medium italic">"{description}"</p>
                         </CardContent>
                     </Card>
                 </motion.div>
-
             )}
-            <h4 className="scroll-m-20 text-2xl font-semibold tracking-tight pl-4 gap-8 flex flex-row">
-                <ul>
-                    Most popular
-                    {mostPopular.map(([popularity, name]) => (
-                        <li key={name}>
-                            <strong>{name}</strong> — {popularity}%
-                        </li>
-                    ))}
-                </ul>
-                <ul>
-                    Least popular
-                    {leastPopular.map(([popularity, name]) => (
-                        <li key={name}>
-                            <strong>{name}</strong> — {popularity}%
-                        </li>
-                    ))}
-                </ul>
-            </h4>
+
+            {animationFinished && (
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.3, duration: 0.8 }}
+                    className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full"
+                >
+                    {/* most popular */}
+                    <div className="space-y-4">
+                        <h3 className="text-xl font-black uppercase tracking-widest bg-black text-white px-4 py-1 inline-block">
+                            Hall of Fame
+                        </h3>
+                        {mostPopular.map(([popularity, name]) => (
+                            <div key={name} className="flex justify-between items-center border-2 border-black p-3 bg-[#fdc6ff] shadow-[4px_4px_0_0_#000]">
+                                <span className="font-mono font-bold">{name}</span>
+                                <span className="text-xs font-black bg-white border-2 border-black px-2 py-0.5">{popularity}%</span>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* least popular */}
+                    <div className="space-y-4">
+                        <h3 className="text-xl font-black uppercase tracking-widest bg-black text-white px-4 py-1 inline-block">
+                            The Underground
+                        </h3>
+                        {leastPopular.map(([popularity, name]) => (
+                            <div key={name} className="flex justify-between items-center border-2 border-black p-3 bg-[#89b4fa] shadow-[4px_4px_0_0_#000]">
+                                <span className="font-mono font-bold">{name}</span>
+                                <span className="text-xs font-black bg-white border-2 border-black px-2 py-0.5">{popularity}%</span>
+                            </div>
+                        ))}
+                    </div>
+                </motion.div>
+            )}
         </div>
-    )
+    );
 }
 
 export function Recommendations() {
-    // TODO: add loading animation for playlist saving
     type SeedOption = 'artists' | 'tracks' | 'surprise';
     const [activeSeed, setActiveSeed] = useState<SeedOption>('artists');
     const [playlistLength, setPlaylistLength] = useState<number>(10);
@@ -143,6 +154,7 @@ export function Recommendations() {
         <div className="flex flex-col justify-center">
             <h4 className="scroll-m-20 text-3xl font-semibold tracking-tight pb-10">Tired of the same 10 songs?
                 Adjust the dials below to generate a playlist that actually gets your taste. </h4>
+            <h4 className="scroll-m-20 text-sm font-semibold tracking-tight pb-4 text-center"> Generate recommendations based on your: </h4>
             <div className="flex flex-row justify-center gap-3 mb-5">
                 {seeds.map((seed) => (
                     <button
@@ -205,22 +217,32 @@ export function TopItems({ items, type }: { items: (Map<string, [string, Set<str
         return {
             name: itemName,
             imageUrl: imageUrl,
-            tags: Array.from(tagsSet) // Converts Set<string> -> string[]
+            tags: Array.from(tagsSet) // converts Set<string> -> string[]
         };
     });
     return(
-        <div className="flex flex-col justify-start">
-            <h1 className="scroll-m-20 text-8xl font-extrabold tracking-tight text-balance pb-5">Your top {type}: </h1>
+        <div className="w-full max-w-4xl mx-auto px-4 flex flex-col items-center">
 
-            <Tabs defaultValue="short">
-                <TabsList>
-                    <TabsTrigger value="short">4 Weeks</TabsTrigger>
-                    <TabsTrigger value="medium">6 Months</TabsTrigger>
-                    <TabsTrigger value="long">1 Year</TabsTrigger>
+            <h1 className="scroll-m-20 text-5xl md:text-7xl lg:text-8xl font-extrabold tracking-tight pb-10 text-center w-full md:whitespace-nowrap">
+                Your top {type}:
+            </h1>
+
+            <Tabs defaultValue="short" className="w-full">
+                <TabsList className="w-full flex justify-center mb-4 bg-transparent gap-4">
+                    <TabsTrigger value="short" className="border-2 border-black">4 Weeks</TabsTrigger>
+                    <TabsTrigger value="medium" className="border-2 border-black">6 Months</TabsTrigger>
+                    <TabsTrigger value="long" className="border-2 border-black">1 Year</TabsTrigger>
                 </TabsList>
-                <TabsContent value="short"><TopItemsList topItems={serializedItemsShort} /></TabsContent>
-                <TabsContent value="medium"><TopItemsList topItems={serializedItemsMedium} /></TabsContent>
-                <TabsContent value="long"><TopItemsList topItems={serializedItemsLong} /></TabsContent>
+
+                <TabsContent value="short" className="w-full">
+                    <TopItemsList topItems={serializedItemsShort} />
+                </TabsContent>
+                <TabsContent value="medium" className="w-full">
+                    <TopItemsList topItems={serializedItemsMedium} />
+                </TabsContent>
+                <TabsContent value="long" className="w-full">
+                    <TopItemsList topItems={serializedItemsLong} />
+                </TabsContent>
             </Tabs>
         </div>
     )
