@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Footer from "@/components/ui/Footer";
-import { Welcome, Popularity, Recommendations, TopItems } from "@/components/top-items-divs";
+import { Welcome, Popularity, Recommendations, TopItems, Summary } from "@/components/top-items-divs";
 import { Button } from "@/components/ui/button";
 import { PreloadItems } from "@/lib/spotifyAPI";
 import {ChartLineIcon, Disc3Icon, HeadphonesIcon, HomeIcon, MicVocalIcon, ScrollTextIcon, UserIcon} from "lucide-react";
@@ -61,6 +61,7 @@ export default function topItems() {
         <Recommendations />,
         topArtists ? <TopItems items={topArtists} type="artists" /> : <div>Loading Artists...</div>,
         topTracks ? <TopItems items={topTracks} type="tracks" /> : <div>Loading Tracks...</div>,
+        topTracks ? <Summary items={topTracks} /> : <div>Loading Summary...</div>,
     ];
 
     const nextDiv = (index: number) => {
