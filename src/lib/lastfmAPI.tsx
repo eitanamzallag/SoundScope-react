@@ -38,15 +38,38 @@ async function getSimilarSong(track: string, artist: string): Promise<string> {
     return query;
 }
 
-export async function createRecommendations(limit: number) {
-    const songsMap = new Map<string, string>();
+async function getArtistTopTrack(artist: string): Promise<string> {
+    let track: string = "";
+    try {
+        const data = await callLastFm("artist.getTopTracks", { artist: artist });
+        track = data.toptracks.track[0].name;
+    }
+    catch (error) {
+        console.log(error);
+        console.log(track);
+    }
+    return track;
+}
+
+export async function createRecommendations(limit: number, seed: string): Promise<string[]> {
     const recommendations: string[] = [];
     const token = sessionStorage.getItem("access_token")!;
 
-    const data = await getTopItems("tracks", "medium_term", limit, token);
+    if (seed == "surprise") {
+        seed = Math.random() < 0.5 ? "artists" : "tracks"; // 50/50 chance of each
+    }
+    console.log(seed);
+    const data = await getTopItems(seed, "medium_term", limit, token);
+    let similar: string = "";
+    console.log(data);
     for (let i = 0; i < data.items.length; i++) {
-        songsMap.set(data.items[i].artists[0].name, data.items[i].name);
-        const similar = await getSimilarSong(data.items[i].name, data.items[i].artists[0].name);
+        if (seed == "tracks") {
+            similar = await getSimilarSong(data.items[i].name, data.items[i].artists[0].name);
+        }
+        else {
+            const track = await getArtistTopTrack(data.items[i].name);
+            similar = await getSimilarSong(track, data.items[i].name);
+        }
         recommendations.push(similar);
     }
     return recommendations;

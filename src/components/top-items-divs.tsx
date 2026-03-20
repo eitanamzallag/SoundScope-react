@@ -44,7 +44,9 @@ function PopularityAnimation({ popularity, onComplete }: PopularityAnimationProp
 
 
 export function Popularity() {
-    const popularityScore = usePopularity(50);
+    const [popularityScore, artistPopularity] = usePopularity(50);
+    let leastPopular = artistPopularity!.slice(-5);
+    let mostPopular = artistPopularity!.slice(0,5);
     let archetype: string;
     let description: string;
     const musicTasteArchetypes = [
@@ -79,8 +81,6 @@ export function Popularity() {
                                              onComplete={ handleAnimationComplete } />
                     ) : (<div></div>)}
                 </h4>
-
-
             </div>
 
             {animationFinished && archetype && description && (
@@ -104,19 +104,85 @@ export function Popularity() {
                 </motion.div>
 
             )}
+            <h4 className="scroll-m-20 text-2xl font-semibold tracking-tight pl-4 gap-8 flex flex-row">
+                <ul>
+                    Most popular
+                    {mostPopular.map(([popularity, name]) => (
+                        <li key={name}>
+                            <strong>{name}</strong> — {popularity}%
+                        </li>
+                    ))}
+                </ul>
+                <ul>
+                    Least popular
+                    {leastPopular.map(([popularity, name]) => (
+                        <li key={name}>
+                            <strong>{name}</strong> — {popularity}%
+                        </li>
+                    ))}
+                </ul>
+            </h4>
         </div>
     )
 }
 
 export function Recommendations() {
     // TODO: add loading animation for playlist saving
+    type SeedOption = 'artists' | 'tracks' | 'surprise';
+    const [activeSeed, setActiveSeed] = useState<SeedOption>('artists');
+    const [playlistLength, setPlaylistLength] = useState<number>(10);
+
+    const seeds: { id: SeedOption; label: string }[] = [
+        { id: 'artists', label: 'Top Artists' },
+        { id: 'tracks', label: 'Top Tracks' },
+        { id: 'surprise', label: 'Surprise Me' },
+    ];
+    const lengths = [10, 20, 30];
+
     return (
         <div className="flex flex-col justify-center">
-            <h4 className="scroll-m-20 text-2xl font-semibold tracking-tight">A playlist with (very good) recommendations specially made for you is waiting right here... Dare to save it?</h4>
-            <Button onClick={() => createRecommendationPlaylist(20)} variant="default">Save Playlist</Button>
-            <h4 className="scroll-m-20 text-2xl font-semibold tracking-tight">Your top tags:</h4>
-            <Button onClick={() => getTopTags(10)} variant="default">Get tags</Button>
-        </div>
+            <h4 className="scroll-m-20 text-3xl font-semibold tracking-tight pb-10">Tired of the same 10 songs?
+                Adjust the dials below to generate a playlist that actually gets your taste. </h4>
+            <div className="flex flex-row justify-center gap-3 mb-5">
+                {seeds.map((seed) => (
+                    <button
+                        key={seed.id}
+                        onClick={() => setActiveSeed(seed.id)}
+                        className={`
+                            px-4 py-2 text-sm font-mono border-2 border-black transition-all
+                            ${activeSeed === seed.id
+                            ? 'bg-[#fdc6ff] shadow-[4px_4px_0_0_#000] -translate-y-1'
+                            : 'bg-white hover:bg-gray-50 active:translate-y-0'
+                            }
+                        `}
+                    >
+                        {seed.label}
+                    </button>
+                ))}
+            </div>
+
+            <div className="flex flex-row justify-center gap-3 w-full pb-10">
+                {lengths.map((len) => (
+                    <button
+                        key={len}
+                        onClick={() => setPlaylistLength(len)}
+                        className={`
+              px-6 py-2 text-sm font-mono border-2 border-black transition-all
+              ${playlistLength === len
+                            ? 'bg-[#fdc6ff] shadow-[4px_4px_0_0_#000] -translate-y-1'
+                            : 'bg-white hover:bg-gray-50 active:translate-y-0 shadow-none'
+                        }
+            `}
+                    >
+                        {len} Tracks
+                    </button>
+                ))}
+            </div>
+            <button onClick={() => createRecommendationPlaylist(playlistLength, activeSeed)} className="
+              px-6 py-2 text-sm font-mono border-2 border-black transition-all bg-[#89b4fa]">
+                Generate Playlist
+            </button>
+            </div>
     )
 }
 

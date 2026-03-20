@@ -21,7 +21,6 @@ async function getProfile(accessToken: string) {
 }
 
 export async function getTopItems(type: string, timeRange: string, limit: number, accessToken: string) {
-    // TODO: add time period - 4 weeks etc
     return await fetchSpotifyData("/me/top/" + type + "?time_range=" + timeRange + "&limit=" + limit, accessToken);
 }
 
@@ -58,15 +57,20 @@ type TopItemsProps = {
 export async function PreloadItems({ type, timeRange }: TopItemsProps) {
     const itemMap = new Map<string, [string, Set<string>]>();
     const token = sessionStorage.getItem("access_token");
-
+    let topTags;
     if (!token) return itemMap;
 
-    // 1. Await the initial list of artists/tracks
     const data = await getTopItems(type, timeRange, 20, token);
-
-    // 2. Fetch all tags in parallel for better performance
-    await Promise.all(data.items.map(async (item: any) => { // promise all to load all at once
-        const topTags = await getTags(3, item.name);
+    await Promise.all(data.items.map(async (item: any) => {
+        if (type=="artists") {
+            topTags = await getTags(3, item.name);
+        }
+        else {
+            topTags = await getTags(3, item.artists[0].name, item.name);
+            if (topTags.size === 0) { // sometimes it's empty so we fall back onto artist tags
+                topTags = await getTags(3, item.artists[0].name);
+            }
+        }
         const imageUrl = type === "tracks" ? item.album.images[0].url : item.images[0].url;
 
         itemMap.set(item.name, [imageUrl, topTags]);
@@ -85,11 +89,9 @@ export function TopItems({ topItems }: { topItems: ArtistItem[] }) {
 
     return (
         <div className="flex flex-col flex-grow gap-4 place-content-center">
-            {/* 1. Map directly over the array. Get 'artist' and 'index' */}
             {topItems && topItems.map((artist, index) => (
                 <div key={artist.name} className="flex items-center">
 
-                    {/* 2. Use index + 1 for the ranking number */}
                     <div className="text-lg font-semibold">{index + 1}</div>
 
                     <div className="flex grow flex-row justify-between ml-5 p-2 mb-2 bg-[#fdc6ff] border-2 border-black">
@@ -106,7 +108,6 @@ export function TopItems({ topItems }: { topItems: ArtistItem[] }) {
                             <div className="text-sm font-semibold pb-2 text-gray-500">Tags:</div>
                             <div className="flex flex-row">
 
-                                {/* 3. 'tags' is already an array, so just map it directly */}
                                 {artist.tags && artist.tags.map((tag) => (
                                     <div key={tag} className="mr-2 p-2 bg-blue-200 rounded-full">
                                         <div className="text-sm font-semibold">{tag}</div>
@@ -123,38 +124,46 @@ export function TopItems({ topItems }: { topItems: ArtistItem[] }) {
 }
 
 
-export function usePopularity(limit: number) {
+export function usePopularity(limit: number): [number | null, [number, string][]] {
     const [averagePopularity, setAveragePopularity] = useState<number | null>(null);
-
+    const [artistPopularity, setArtistPopularity] = useState<[number, string][]>([]);
     useEffect(() => {
         const token = sessionStorage.getItem("access_token");
-        if (!token) {
-            console.log("no token");
-            return;
-        }
+        if (!token) return;
 
-        getTopItems("tracks", "medium_term", limit, token).then(data => {
-            const items = data.items;
+        getTopItems("artists", "medium_term", limit, token).then(data => {
+            const items = data.items || [];
             let total = 0;
-            for (let i = 0; i < items.length; i++) {
-                total += items[i].popularity;
-            }
+
+            const newEntries: [number, string][] = items.map((item: any) => {
+                total += item.popularity;
+                return [item.popularity, item.name];
+            });
+
+            newEntries.sort((a, b) => b[0] - a[0]);
+
             setAveragePopularity(Math.round(total / limit));
+            setArtistPopularity(newEntries);
         });
     }, [limit]);
 
-    return averagePopularity;
+    return [averagePopularity!, artistPopularity];
 }
 
-async function findSong(query: string) {
-    const formattedQuery = "q=%22" + query.replaceAll(" ", "+") + "%22";
+async function findSong(query: string): Promise<string | null> {
+    const formattedQuery = `q=${encodeURIComponent(query)}`;
     let songUri = '';
 
     const token = sessionStorage.getItem("access_token");
 
-    const data = await fetchSpotifyData("/search?" + formattedQuery + "&type=track&limit=1", token);
-    songUri = data.tracks.items[0].uri;
-    return songUri;
+    try {
+        const data = await fetchSpotifyData(`/search?${formattedQuery}&type=track&limit=1`, token);
+        const songUri = data?.tracks?.items?.[0]?.uri;
+        return songUri || null;
+    } catch (error) {
+        console.error(`Search failed for: ${query}`, error);
+        return null;
+    }
 }
 
 async function createSpotifyPlaylist(
@@ -211,8 +220,8 @@ async function addTracksToPlaylist(
     return response.json();
 }
 
-export async function createRecommendationPlaylist(limit: number) {
-    const recs = await createRecommendations(limit);
+export async function createRecommendationPlaylist(limit: number, seed: string) {
+    const recs = await createRecommendations(limit, seed);
     let playlistId = "";
     let uris: string[] = [];
     const token = sessionStorage.getItem("access_token");
@@ -220,12 +229,13 @@ export async function createRecommendationPlaylist(limit: number) {
     const profile = await getProfile(token);
     const userId = profile.id;
 
-    await createSpotifyPlaylist(userId, token, "SoundScope Recs", "", true).then(data => {
+    await createSpotifyPlaylist(userId, token, "SoundScope Recommendations", "", true).then(data => {
         playlistId = data.id;
     })
-    for (let i = 0; i < recs.length; i++) {
-        const rec = await findSong(recs[i]);
-        uris.push(rec);
+    console.log(recs);
+    const uriResults = await Promise.all(recs.map(trackName => findSong(trackName)));
+    const validUris = uriResults.filter((uri): uri is string => !!uri);
+    if (validUris.length > 0) {
+        await addTracksToPlaylist(playlistId, token, validUris);
     }
-    await addTracksToPlaylist(playlistId, token, uris);
 }

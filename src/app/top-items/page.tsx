@@ -26,7 +26,7 @@ export default function topItems() {
             console.log("starting preload");
 
             try {
-                // define all your data requests as promises
+                // define data requests as promises
                 const artistPromises = [
                     PreloadItems({type: "artists", timeRange: "short_term"}),
                     PreloadItems({ type: "artists", timeRange: "medium_term" }),
