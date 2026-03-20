@@ -151,7 +151,7 @@ export function Recommendations() {
     const lengths = [10, 20, 30];
 
     return (
-        <div className="flex flex-col justify-center">
+        <div className="flex flex-col justify-center max-w-4xl">
             <h4 className="scroll-m-20 text-3xl font-semibold tracking-tight pb-10">Tired of the same 10 songs?
                 Adjust the dials below to generate a playlist that actually gets your taste. </h4>
             <h4 className="scroll-m-20 text-sm font-semibold tracking-tight pb-4 text-center"> Generate recommendations based on your: </h4>
@@ -276,15 +276,15 @@ export function MusicSummary({ popularityScore, topArtist, topTrack, archetype, 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full mb-8">
                 <div className="p-4 border-2 border-black bg-white">
                     <p className="text-[10px] font-black uppercase opacity-40">Mainstream Rating</p>
-                    <p className="text-3xl font-black">{popularityScore}%</p>
+                    <p className="text-2xl font-black">{popularityScore}%</p>
                 </div>
                 <div className="p-4 border-2 border-black bg-white">
                     <p className="text-[10px] font-black uppercase opacity-40">Heavy Rotation</p>
-                    <p className="text-lg font-bold truncate">{topArtist}</p>
+                    <p className="text-2xl font-bold truncate">{topArtist}</p>
                 </div>
                 <div className="p-4 border-2 border-black bg-white md:col-span-2">
                     <p className="text-[10px] font-black uppercase opacity-40">Current Anthem</p>
-                    <p className="text-lg font-bold truncate">{topTrack}</p>
+                    <p className="text-2xl font-bold truncate">{topTrack}</p>
                 </div>
             </div>
 
@@ -309,4 +309,4 @@ export function Summary({ items }: { items: (Map<string, [string, Set<string>]> 
             <MusicSummary popularityScore={popularityScore} topArtist={topArtist} topTrack={topTrack} archetype={archetype} description={description} />
         </div>
     );
-    }
+}
