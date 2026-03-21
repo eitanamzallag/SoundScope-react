@@ -1,9 +1,9 @@
-import {JSX, useEffect, useState} from "react";
+import {useEffect, useState} from "react";
 import { createRecommendations, getTags } from "./lastfmAPI";
 
 const BASE_URL = "https://api.spotify.com/v1";
 
-async function fetchSpotifyData(endpoint: string, accessToken: any) {
+async function fetchSpotifyData(endpoint: string, accessToken: string | null) { // TODO: check type
     const response = await fetch(`${BASE_URL}${endpoint}`, {
         headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -61,7 +61,8 @@ export async function PreloadItems({ type, timeRange }: TopItemsProps) {
     if (!token) return itemMap;
 
     const data = await getTopItems(type, timeRange, 20, token);
-    await Promise.all(data.items.map(async (item: any) => {
+    // TODO: check type
+    await Promise.all(data.items.map(async (item: { name: string; artists: { name: string; }[]; album: { images: { url: string; }[]; }; images: { url: string; }[]; }) => {
         if (type=="artists") {
             topTags = await getTags(3, item.name);
         }
@@ -137,7 +138,7 @@ export function usePopularity(limit: number): [number | null, [number, string][]
             const items = data.items || [];
             let total = 0;
 
-            const newEntries: [number, string][] = items.map((item: any) => {
+            const newEntries: [number, string][] = items.map((item: { popularity: number; name: string; }) => {
                 total += item.popularity;
                 return [item.popularity, item.name];
             });
@@ -154,8 +155,6 @@ export function usePopularity(limit: number): [number | null, [number, string][]
 
 async function findSong(query: string): Promise<string | null> {
     const formattedQuery = `q=${encodeURIComponent(query)}`;
-    let songUri = '';
-
     const token = sessionStorage.getItem("access_token");
 
     try {
@@ -225,7 +224,6 @@ async function addTracksToPlaylist(
 export async function createRecommendationPlaylist(limit: number, seed: string) {
     const recs = await createRecommendations(limit, seed);
     let playlistId = "";
-    let uris: string[] = [];
     const token = sessionStorage.getItem("access_token");
     if (!token) return;
     const profile = await getProfile(token);

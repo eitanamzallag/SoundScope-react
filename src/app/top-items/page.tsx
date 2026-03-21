@@ -1,25 +1,24 @@
 "use client"
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Footer from "@/components/ui/Footer";
-import { Welcome, Popularity, Recommendations, TopItems, Summary } from "@/components/top-items-divs";
+import { Welcome, Popularity, Recommendations, TopItemsSection, Summary } from "@/components/top-items-divs";
 import { Button } from "@/components/ui/button";
 import { PreloadItems } from "@/lib/spotifyAPI";
-import {ChartLineIcon, Disc3Icon, HeadphonesIcon, HomeIcon, MicVocalIcon, ScrollTextIcon, UserIcon} from "lucide-react";
-import LightIcon from "next/dist/next-devtools/dev-overlay/icons/light-icon";
-export default function topItems() {
+import {ChartLineIcon, Disc3Icon, HeadphonesIcon, MicVocalIcon, ScrollTextIcon, UserIcon} from "lucide-react";
+export default function TopItems() {
     const [activeIndex, setActiveIndex] = useState(0);
     const [topArtists, setTopArtists] = useState<(Map<string, [string, Set<string>]> | undefined)[]>();
     const [topTracks, setTopTracks] = useState<(Map<string, [string, Set<string>]> | undefined)[]>();
 
-    const texts = [
-        [<UserIcon />, "Profile"],
-        [<ChartLineIcon />, "Popularity"],
-        [<HeadphonesIcon />, "Recommendations"],
-        [<MicVocalIcon/>, "Top Artists"],
-        [<Disc3Icon/>, "Top Songs"],
-        [<ScrollTextIcon/>, "Summary"],
-    ]
+    const texts: React.ReactNode[][] = [
+        [<UserIcon key="profile" />, "Profile"],
+        [<ChartLineIcon key="pop" />, "Popularity"],
+        [<HeadphonesIcon key="rec" />, "Recommendations"],
+        [<MicVocalIcon key="artists" />, "Top Artists"],
+        [<Disc3Icon key="songs" />, "Top Songs"],
+        [<ScrollTextIcon key="sum" />, "Summary"],
+    ];
 
     useEffect(() => {
         async function loadAllSpotifyData() {
@@ -55,12 +54,12 @@ export default function topItems() {
         loadAllSpotifyData();
     }, []);
 
-    const divs = [
-        <Welcome />,
-        <Popularity />,
-        <Recommendations />,
-        topArtists ? <TopItems items={topArtists} type="artists" /> : <div>Loading Artists...</div>,
-        topTracks ? <TopItems items={topTracks} type="tracks" /> : <div>Loading Tracks...</div>,
+    const divs: React.ReactNode[] = [
+        <Welcome key="welcome" />,
+        <Popularity key="pop" />,
+        <Recommendations key="rec" />,
+        topArtists ? <TopItemsSection items={topArtists} type="artists" /> : <div>Loading Artists...</div>,
+        topTracks ? <TopItemsSection items={topTracks} type="tracks" /> : <div>Loading Tracks...</div>,
         topTracks ? <Summary items={topTracks} /> : <div>Loading Summary...</div>,
     ];
 

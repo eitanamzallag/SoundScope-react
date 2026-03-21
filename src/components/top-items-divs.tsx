@@ -2,8 +2,6 @@
 
 import {createRecommendationPlaylist, TopItems as TopItemsList, UserProfile} from "../lib/spotifyAPI";
 import {usePopularity} from "../lib/spotifyAPI";
-import {Button} from "@/components/ui/button";
-import {getTopTags} from "../lib/lastfmAPI";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { motion, useMotionValue, useTransform } from "motion/react";
@@ -57,8 +55,8 @@ function PopularityAnimation({ popularity, onComplete }: PopularityAnimationProp
 
 export function Popularity() {
     const [popularityScore, artistPopularity] = usePopularity(50);
-    let leastPopular = artistPopularity!.slice(-5);
-    let mostPopular = artistPopularity!.slice(0,5);
+    const leastPopular = artistPopularity!.slice(-5);
+    const mostPopular = artistPopularity!.slice(0,5);
     let archetype: string;
     let description: string;
     if (popularityScore != 100) {
@@ -94,7 +92,7 @@ export function Popularity() {
                             <CardTitle className="text-3xl font-black">{archetype}</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-lg font-medium italic">"{description}"</p>
+                            <p className="text-lg font-medium italic">{`"${description}"`}</p>
                         </CardContent>
                     </Card>
                 </motion.div>
@@ -198,7 +196,7 @@ export function Recommendations() {
     )
 }
 
-export function TopItems({ items, type }: { items: (Map<string, [string, Set<string>]> | undefined)[], type: string }) {
+export function TopItemsSection({ items, type }: { items: (Map<string, [string, Set<string>]> | undefined)[], type: string }) {
     const serializedItemsShort = Array.from(items[0]!.entries()).map(([itemName, [imageUrl, tagsSet]]) => {
         return {
             name: itemName,
@@ -270,7 +268,7 @@ export function MusicSummary({ popularityScore, topArtist, topTrack, archetype, 
 
             <div className="bg-[#caffbf] border-2 border-black p-6 w-full text-center mb-6 shadow-[4px_4px_0_0_#000]">
                 <h3 className="text-2xl font-black mb-2">{archetype}</h3>
-                <p className="font-medium italic leading-tight">"{description}"</p>
+                <p className="font-medium italic leading-tight">{`"${description}"`}</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full mb-8">

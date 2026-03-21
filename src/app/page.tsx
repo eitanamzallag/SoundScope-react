@@ -1,7 +1,4 @@
 'use client';
-import { Button } from "@/components/ui/button"
-import Header from "../components/ui/Header";
-import Footer from "../components/ui/Footer";
 import React from 'react';
 import { motion } from 'motion/react';
 import { Music, Zap, Fingerprint } from 'lucide-react';
