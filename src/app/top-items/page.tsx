@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Footer from "@/components/ui/Footer";
 import { Welcome, Popularity, Recommendations, TopItemsSection, Summary } from "@/components/top-items-divs";
 import { Button } from "@/components/ui/button";
-import { PreloadItems } from "@/lib/spotifyAPI";
+import { PreloadItems } from "@/app/api/spotifyAPI";
 import {ChartLineIcon, Disc3Icon, HeadphonesIcon, MicVocalIcon, ScrollTextIcon, UserIcon} from "lucide-react";
 export default function TopItems() {
     const [activeIndex, setActiveIndex] = useState(0);

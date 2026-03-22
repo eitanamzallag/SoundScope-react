@@ -1,7 +1,7 @@
 "use client";
 
-import {createRecommendationPlaylist, TopItems as TopItemsList, UserProfile} from "../lib/spotifyAPI";
-import {usePopularity} from "../lib/spotifyAPI";
+import {createRecommendationPlaylist, TopItems as TopItemsList, UserProfile} from "../app/api/spotifyAPI";
+import {usePopularity} from "../app/api/spotifyAPI";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { motion, useMotionValue, useTransform } from "motion/react";

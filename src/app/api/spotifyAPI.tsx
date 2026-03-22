@@ -1,5 +1,5 @@
 import {useEffect, useState} from "react";
-import { createRecommendations, getTags } from "./lastfmAPI";
+import { createRecommendations, getTags } from "./lastfm/lastfmAPI";
 
 const BASE_URL = "https://api.spotify.com/v1";
 

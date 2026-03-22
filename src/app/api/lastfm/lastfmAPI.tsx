@@ -1,26 +1,13 @@
-import { getTopItems } from "./spotifyAPI"
+import { getTopItems } from "../spotifyAPI"
 
 const api_key = process.env.NEXT_PUBLIC_LASTFM_API_KEY;
 const BASE_URL = "https://ws.audioscrobbler.com/2.0/";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function callLastFm<T = any>(
-    method: string,
-    params: Record<string, string>
-): Promise<T> {
-    const searchParams = new URLSearchParams({
-        method,
-        api_key: api_key!,
-        format: "json",
-        ...params,
-    });
-
-    const response = await fetch(`${BASE_URL}?${searchParams.toString()}`);
-    if (!response.ok) {
-        throw new Error(`Last.fm API error: ${response.status} ${response.statusText}`);
-    }
-
-    return (await response.json()) as T;
+async function callLastFm<T = any>(method: string, params: Record<string, string>): Promise<T> {
+    const searchParams = new URLSearchParams({ method, ...params });
+    const response = await fetch(`/api/lastfm?${searchParams.toString()}`);
+    return await response.json() as Promise<T>;
 }
 
 async function getSimilarSong(track: string, artist: string): Promise<string> {
