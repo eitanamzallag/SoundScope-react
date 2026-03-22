@@ -1,6 +1,6 @@
 import { getTopItems } from "./spotifyAPI"
 
-const api_key = process.env.LASTFM_API_KEY;
+const api_key = process.env.NEXT_PUBLIC_LASTFM_API_KEY;
 const BASE_URL = "https://ws.audioscrobbler.com/2.0/";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -14,6 +14,7 @@ async function callLastFm<T = any>(
         format: "json",
         ...params,
     });
+    console.log(api_key);
 
     const response = await fetch(`${BASE_URL}?${searchParams.toString()}`);
     if (!response.ok) {
