@@ -7,7 +7,7 @@ export async function GET(request: Request) {
     });
 
     console.log("API key present:", !!process.env.LASTFM_API_KEY);
-    console.log("Full URL:", `https://ws.audioscrobbler.com/2.0/?${params}`);
+    console.log("Full URL:", `https://ws.audioscrobbler.com/2.0/?${params.toString()}`);
 
     const response = await fetch(`https://ws.audioscrobbler.com/2.0/?${params}`);
     const data = await response.json();
