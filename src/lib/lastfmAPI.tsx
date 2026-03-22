@@ -14,7 +14,6 @@ async function callLastFm<T = any>(
         format: "json",
         ...params,
     });
-    console.log(api_key);
 
     const response = await fetch(`${BASE_URL}?${searchParams.toString()}`);
     if (!response.ok) {
@@ -80,10 +79,14 @@ export async function createRecommendations(limit: number, seed: string): Promis
 export async function getTags(limit: number, artist: string, track?: string) {
     let data;
     if (track !== undefined) {
-        data = await callLastFm("track.getTopTags", {track: track, artist: artist});
-    }
-    else {
-        data = await callLastFm("artist.getTopTags", {artist: artist});
+        try {
+            data = await callLastFm("track.getTopTags", { track, artist });
+        } catch (error) {
+            // fall back to artist tags if track tags fail (CORS/502 issue)
+            data = await callLastFm("artist.getTopTags", { artist });
+        }
+    } else {
+        data = await callLastFm("artist.getTopTags", { artist });
     }
     const songTags = new Set<string>();
     for (let i = 0; i < limit; i++) {
