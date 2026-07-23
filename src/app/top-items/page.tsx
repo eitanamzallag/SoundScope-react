@@ -71,7 +71,7 @@ export default function TopItems() {
 
 
     return (
-        <div className="flex min-h-dvh flex-col overflow-hidden text-black"
+        <div className="flex h-dvh flex-col overflow-hidden text-black"
              style={{
                  backgroundColor: "#AAD7B8",
                  backgroundRepeat: 'no-repeat',
