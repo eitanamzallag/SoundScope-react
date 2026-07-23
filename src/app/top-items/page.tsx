@@ -80,15 +80,15 @@ export default function TopItems() {
             <div className="flex min-h-0 flex-1 flex-col overflow-hidden pt-3 lg:flex-row lg:pt-7">
                 <nav
                     aria-label="SoundScope sections"
-                    className="flex w-full shrink-0 gap-2 overflow-x-auto px-3 pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden lg:w-56 lg:flex-col lg:gap-0 lg:overflow-visible lg:p-4 xl:w-1/6 xl:p-5"
+                    className="flex w-full shrink-0 gap-2 overflow-x-auto px-3 pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden lg:w-56 lg:flex-col lg:gap-2 lg:overflow-visible lg:p-4 xl:w-1/6 xl:p-5"
                 >
                     {navigationItems.map(({ icon, label }, index) => (
                         <Button
                             key={label}
                             variant="ghost"
                             aria-current={activeIndex === index ? "page" : undefined}
-                            className={`h-auto min-w-[5.25rem] flex-col gap-1 rounded-md px-3 py-2 text-[10px] lg:min-w-0 lg:flex-row lg:justify-start lg:gap-2 lg:p-4 lg:text-sm xl:p-8 ${
-                                activeIndex === index ? "bg-white/70 shadow-[3px_3px_0_0_#000]" : ""
+                            className={`h-auto min-w-[5.25rem] flex-col gap-1 rounded-md px-3 py-2 text-[10px] lg:min-w-0 lg:flex-row lg:justify-start lg:gap-2 lg:px-4 lg:py-3 lg:text-sm xl:px-6 xl:py-4 ${
+                                activeIndex === index ? "bg-white/70 shadow-[2px_2px_0_0_#000]" : "hover:bg-white/40"
                             }`}
                             onClick={() => nextDiv(index)}
                         >
