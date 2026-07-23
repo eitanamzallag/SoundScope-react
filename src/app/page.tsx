@@ -43,7 +43,7 @@ export default function Home() {
                 </div>
 
                 <div className="relative mb-12">
-                    <h1 className="text-8xl md:text-[12rem] font-black uppercase tracking-tighter leading-[0.8] text-center italic">
+                    <h1 className="text-6xl sm:text-8xl md:text-[12rem] font-black uppercase tracking-tighter leading-[0.8] text-center italic">
                         Sound<br/>Scope
                     </h1>
 
@@ -76,7 +76,7 @@ export default function Home() {
                     className="
                         group relative px-12 py-6
                         bg-[#caffbf] border-4 border-black
-                        text-2xl font-black uppercase tracking-tighter
+                        text-lg sm:text-2xl font-black uppercase tracking-tighter
                         shadow-[10px_10px_0_0_#000]
                         hover:translate-x-1 hover:translate-y-1 hover:shadow-none
                         transition-all duration-200

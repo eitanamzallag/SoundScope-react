@@ -14,8 +14,8 @@ export function LinkedInButton() {
 
 export default function Footer() {
     return(
-        <footer className="flex flex-row justify-center p-5">
-            <p className="leading-7 [&:not(:first-child)]:mt-6 mr-2">Eitan Amzallag</p>
+        <footer className="flex shrink-0 flex-row items-center justify-center px-4 py-3 text-sm md:p-5 md:text-base">
+            <p className="mr-2 leading-7">Eitan Amzallag</p>
             <LinkedInButton />
         </footer>
     );

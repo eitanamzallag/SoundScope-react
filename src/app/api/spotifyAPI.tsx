@@ -37,14 +37,21 @@ export function UserProfile() {
     });
     }, []);
 
-    return <div className="flex flex-row items-center">
-        <h1 className="whitespace-pre scroll-m-20 text-8xl font-extrabold tracking-tight text-balance pr-2">{name}</h1>
-        <img className="m-5 rounded-2xl"
-            src={imageUrl!}
-            alt={name ?? "User profile image"}
-            width={150}
-            height={150}
-        />
+    return <div className="flex flex-col items-center sm:flex-row">
+        {name && (
+            <h1 className="scroll-m-20 break-words text-center text-4xl font-extrabold tracking-tight text-balance sm:pr-2 sm:text-6xl lg:text-8xl">
+                {name}
+            </h1>
+        )}
+        {imageUrl && (
+            <img
+                className="m-3 h-24 w-24 rounded-2xl object-cover sm:m-5 sm:h-[150px] sm:w-[150px]"
+                src={imageUrl}
+                alt={name ? `${name.trim()}'s Spotify profile` : "Spotify profile"}
+                width={150}
+                height={150}
+            />
+        )}
     </div>
 
 }
@@ -89,22 +96,22 @@ interface ArtistItem {
 
 export function TopItems({ topItems }: { topItems: ArtistItem[] }) {
     return (
-        <div className="flex flex-col w-full gap-4">
+        <div className="flex w-full flex-col gap-4">
             {topItems && topItems.map((artist, index) => (
-                <div key={artist.name} className="flex flex-row items-center w-full">
-                    <div className="text-xl font-black text-right w-12 flex-shrink-0 pr-4">
+                <div key={artist.name} className="flex w-full min-w-0 flex-row items-center">
+                    <div className="w-7 shrink-0 pr-2 text-right text-sm font-black sm:w-12 sm:pr-4 sm:text-xl">
                         {index + 1}
                     </div>
-                    <div className="flex-1 min-w-0 flex flex-row justify-between items-center p-4 bg-[#fdc6ff] border-2 border-black shadow-[4px_4px_0_0_#000]">
+                    <div className="flex min-w-0 flex-1 flex-row items-center justify-between border-2 border-black bg-[#fdc6ff] p-2 shadow-[4px_4px_0_0_#000] sm:p-4">
 
-                        <div className="flex flex-row items-center gap-4 min-w-0">
+                        <div className="flex min-w-0 flex-row items-center gap-3 sm:gap-4">
                             <img
                                 src={artist.imageUrl}
                                 alt={artist.name}
-                                className="w-20 h-20 md:w-24 md:h-24 object-cover border-2 border-black flex-shrink-0"
+                                className="h-14 w-14 shrink-0 border-2 border-black object-cover sm:h-20 sm:w-20 md:h-24 md:w-24"
                             />
                             <div className="min-w-0">
-                                <div className="text-xl font-bold truncate" title={artist.name}>
+                                <div className="truncate text-sm font-bold sm:text-xl" title={artist.name}>
                                     {artist.name}
                                 </div>
                             </div>

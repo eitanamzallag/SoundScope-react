@@ -24,12 +24,12 @@ const musicTasteArchetypes = [
 ];
 
 export function Welcome() {
-    return <div className="flex flex-col justify-center items-center">
-        <div className="flex flex-row flex-wrap items-center">
-            <h1 className="scroll-m-20 text-8xl font-extrabold tracking-tight text-balance">Welcome, </h1>
+    return <div className="flex w-full flex-col items-center justify-center text-center">
+        <div className="flex flex-col items-center sm:flex-row sm:flex-wrap sm:justify-center">
+            <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight text-balance sm:text-6xl lg:text-8xl">Welcome, </h1>
             < UserProfile/>
         </div>
-        <h4 className="scroll-m-20 text-2xl font-semibold tracking-tight">Find out how popular your taste in music
+        <h4 className="scroll-m-20 max-w-xl text-lg font-semibold tracking-tight sm:text-2xl">Find out how popular your taste in music
             is</h4>
     </div>
 }
@@ -72,10 +72,10 @@ export function Popularity() {
     const handleAnimationComplete = () => { setAnimationFinished(true); };
 
     return (
-        <div className="flex flex-col justify-center items-center w-full max-w-4xl mx-auto">
-            <div className="flex flex-row items-center mb-8">
-                <h4 className="scroll-m-20 text-3xl font-bold tracking-tight">Your popularity score is </h4>
-                <h4 className="scroll-m-20 text-3xl font-black tracking-tight pl-4">
+        <div className="mx-auto flex w-full max-w-4xl flex-col items-center justify-center">
+            <div className="mb-8 flex flex-wrap items-center justify-center text-center">
+                <h4 className="scroll-m-20 text-2xl font-bold tracking-tight sm:text-3xl">Your popularity score is </h4>
+                <h4 className="scroll-m-20 pl-2 text-2xl font-black tracking-tight sm:pl-4 sm:text-3xl">
                     {typeof popularityScore === 'number' ? (
                         <PopularityAnimation popularity={popularityScore} onComplete={handleAnimationComplete} />
                     ) : (<div></div>)}
@@ -89,12 +89,12 @@ export function Popularity() {
                     transition={{ duration: 0.5, ease: "easeOut" }}
                     className="w-full mb-10"
                 >
-                    <Card className="text-center border-4 border-black shadow-[8px_8px_0_0_#000] bg-white">
-                        <CardHeader>
-                            <CardTitle className="text-3xl font-black">{archetype}</CardTitle>
+                    <Card className="border-4 border-black bg-white text-center shadow-[6px_6px_0_0_#000] sm:shadow-[8px_8px_0_0_#000]">
+                        <CardHeader className="px-4 sm:px-6">
+                            <CardTitle className="text-2xl font-black sm:text-3xl">{archetype}</CardTitle>
                         </CardHeader>
-                        <CardContent>
-                            <p className="text-lg font-medium italic">{`"${description}"`}</p>
+                        <CardContent className="px-4 sm:px-6">
+                            <p className="text-base font-medium italic sm:text-lg">{`"${description}"`}</p>
                         </CardContent>
                     </Card>
                 </motion.div>
@@ -105,7 +105,7 @@ export function Popularity() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.3, duration: 0.8 }}
-                    className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full"
+                    className="grid w-full grid-cols-1 gap-8 md:grid-cols-2"
                 >
                     {/* most popular */}
                     <div className="space-y-4">
@@ -169,11 +169,11 @@ export function Recommendations() {
     };
 
     return (
-        <div className="flex flex-col justify-center max-w-4xl">
-            <h4 className="scroll-m-20 text-3xl font-semibold tracking-tight pb-10">Tired of the same 10 songs?
+        <div className="flex w-full max-w-4xl flex-col justify-center">
+            <h4 className="scroll-m-20 pb-8 text-xl font-semibold tracking-tight sm:pb-10 sm:text-3xl">Tired of the same 10 songs?
                 Adjust the dials below to generate a playlist that actually gets your taste. </h4>
             <h4 className="scroll-m-20 text-sm font-semibold tracking-tight pb-4 text-center"> Generate recommendations based on your: </h4>
-            <div className="flex flex-row justify-center gap-3 mb-5">
+            <div className="mb-5 grid grid-cols-1 gap-3 min-[420px]:grid-cols-3">
                 {seeds.map((seed) => (
                     <button
                         key={seed.id}
@@ -192,7 +192,7 @@ export function Recommendations() {
                 ))}
             </div>
 
-            <div className="flex flex-row justify-center gap-3 w-full pb-10">
+            <div className="grid w-full grid-cols-1 gap-3 pb-10 min-[420px]:grid-cols-3">
                 {lengths.map((len) => (
                     <button
                         key={len}
@@ -252,17 +252,17 @@ export function TopItemsSection({ items, type }: { items: (Map<string, [string, 
         };
     });
     return(
-        <div className="w-full max-w-4xl mx-auto px-4 flex flex-col items-center">
+        <div className="mx-auto flex w-full min-w-0 max-w-4xl flex-col items-center px-0 sm:px-4">
 
-            <h1 className="scroll-m-20 text-5xl md:text-7xl lg:text-8xl font-extrabold tracking-tight pb-10 text-center w-full md:whitespace-nowrap">
+            <h1 className="scroll-m-20 w-full pb-6 text-center text-4xl font-extrabold tracking-tight sm:pb-10 sm:text-5xl md:whitespace-nowrap md:text-7xl lg:text-8xl">
                 Your top {type}:
             </h1>
 
             <Tabs defaultValue="short" className="w-full">
-                <TabsList className="w-full flex justify-center mb-4 bg-transparent gap-4">
-                    <TabsTrigger value="short" className="border-2 border-black">4 Weeks</TabsTrigger>
-                    <TabsTrigger value="medium" className="border-2 border-black">6 Months</TabsTrigger>
-                    <TabsTrigger value="long" className="border-2 border-black">1 Year</TabsTrigger>
+                <TabsList className="mb-4 grid h-auto w-full grid-cols-3 gap-1 bg-transparent sm:gap-4">
+                    <TabsTrigger value="short" className="border-2 border-black px-2 text-xs sm:text-sm">4 Weeks</TabsTrigger>
+                    <TabsTrigger value="medium" className="border-2 border-black px-2 text-xs sm:text-sm">6 Months</TabsTrigger>
+                    <TabsTrigger value="long" className="border-2 border-black px-2 text-xs sm:text-sm">1 Year</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="short" className="w-full">
@@ -320,35 +320,35 @@ export function MusicSummary({ popularityScore, topArtist, topTrack, archetype, 
     };
 
     return (
-        <div className="flex flex-col items-center gap-6">
+        <div className="flex w-full min-w-0 flex-col items-center gap-6">
             <motion.div
                 ref={summaryRef}
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="flex flex-col items-center w-full max-w-2xl mx-auto p-8 border-4 border-black bg-[#fffbeb] shadow-[12px_12px_0_0_#000]"
+                className="mx-auto flex w-full max-w-2xl flex-col items-center border-4 border-black bg-[#fffbeb] p-4 shadow-[7px_7px_0_0_#000] sm:p-8 sm:shadow-[12px_12px_0_0_#000]"
             >
                 <div className="w-full border-b-4 border-black pb-4 mb-6 text-center">
-                    <h2 className="text-4xl font-black uppercase tracking-tighter italic">The Final Verdict</h2>
-                    <p className="font-mono text-sm opacity-60">GENERATED BY SOUNDSCOPE v1.0</p>
+                    <h2 className="text-2xl font-black uppercase tracking-tighter italic sm:text-4xl">The Final Verdict</h2>
+                    <p className="font-mono text-[10px] opacity-60 sm:text-sm">GENERATED BY SOUNDSCOPE v1.0</p>
                 </div>
 
-                <div className="bg-[#caffbf] border-2 border-black p-6 w-full text-center mb-6 shadow-[4px_4px_0_0_#000]">
-                    <h3 className="text-2xl font-black mb-2">{archetype}</h3>
+                <div className="mb-6 w-full border-2 border-black bg-[#caffbf] p-4 text-center shadow-[4px_4px_0_0_#000] sm:p-6">
+                    <h3 className="mb-2 text-xl font-black sm:text-2xl">{archetype}</h3>
                     <p className="font-medium italic leading-tight">{`"${description}"`}</p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full mb-8">
+                <div className="mb-8 grid w-full grid-cols-1 gap-4 md:grid-cols-2">
                     <div className="p-4 border-2 border-black bg-white">
                         <p className="text-[10px] font-black uppercase opacity-40">Mainstream Rating</p>
                         <p className="text-2xl font-black">{popularityScore}%</p>
                     </div>
                     <div className="p-4 border-2 border-black bg-white">
                         <p className="text-[10px] font-black uppercase opacity-40">Heavy Rotation</p>
-                        <p className="text-2xl font-bold truncate">{topArtist}</p>
+                        <p className="truncate text-xl font-bold sm:text-2xl">{topArtist}</p>
                     </div>
                     <div className="p-4 border-2 border-black bg-white md:col-span-2">
                         <p className="text-[10px] font-black uppercase opacity-40">Current Anthem</p>
-                        <p className="text-2xl font-bold truncate">{topTrack}</p>
+                        <p className="truncate text-xl font-bold sm:text-2xl">{topTrack}</p>
                     </div>
                 </div>
 
@@ -362,7 +362,7 @@ export function MusicSummary({ popularityScore, topArtist, topTrack, archetype, 
                 type="button"
                 onClick={saveAsImage}
                 disabled={isSaving}
-                className="flex items-center gap-2 px-6 py-3 border-2 border-black bg-[#fdc6ff] font-mono font-bold uppercase shadow-[4px_4px_0_0_#000] transition-all hover:translate-x-1 hover:translate-y-1 hover:shadow-none disabled:cursor-wait disabled:opacity-60"
+                className="flex w-full items-center justify-center gap-2 border-2 border-black bg-[#fdc6ff] px-6 py-3 font-mono font-bold uppercase shadow-[4px_4px_0_0_#000] transition-all hover:translate-x-1 hover:translate-y-1 hover:shadow-none disabled:cursor-wait disabled:opacity-60 sm:w-auto"
             >
                 <Download size={18} aria-hidden="true" />
                 {isSaving ? "Saving..." : "Save as image"}
@@ -386,7 +386,7 @@ export function Summary({ items }: { items: (Map<string, [string, Set<string>]> 
     const [archetype, description] = musicTasteArchetypes[Math.floor(popularityScore / 10)];
 
     return (
-        <div className="flex flex-col justify-center">
+        <div className="flex w-full min-w-0 flex-col justify-center">
             <MusicSummary popularityScore={popularityScore} topArtist={topArtist} topTrack={topTrack} archetype={archetype} description={description} />
         </div>
     );

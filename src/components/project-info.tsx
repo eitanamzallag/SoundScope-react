@@ -20,14 +20,14 @@ export function ProjectInfo() {
     }, [isOpen]);
 
     return (
-        <aside className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-4">
+        <aside className="fixed bottom-16 right-4 z-50 flex flex-col items-end gap-3 sm:bottom-6 sm:right-6 sm:gap-4">
             {isOpen && (
                 <Card
                     id="project-information"
                     role="dialog"
                     aria-modal="false"
                     aria-labelledby="project-information-title"
-                    className="w-[min(22rem,calc(100vw-3rem))] border-2 border-black bg-[#fffbeb] shadow-[8px_8px_0_0_#000]"
+                    className="max-h-[calc(100dvh-7rem)] w-[min(22rem,calc(100vw-2rem))] overflow-y-auto border-2 border-black bg-[#fffbeb] shadow-[6px_6px_0_0_#000] sm:shadow-[8px_8px_0_0_#000]"
                 >
                     <CardHeader className="flex flex-row items-start justify-between gap-4 border-b-2 border-black">
                         <div>
