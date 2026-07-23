@@ -1,5 +1,5 @@
 "use client"
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Footer from "@/components/ui/Footer";
 import { Welcome, Popularity, Recommendations, TopItemsSection, Summary } from "@/components/top-items-divs";
@@ -11,6 +11,7 @@ export default function TopItems() {
     const [activeIndex, setActiveIndex] = useState(0);
     const [topArtists, setTopArtists] = useState<(Map<string, [string, Set<string>]> | undefined)[]>();
     const [topTracks, setTopTracks] = useState<(Map<string, [string, Set<string>]> | undefined)[]>();
+    const contentPanelRef = useRef<HTMLElement>(null);
 
     const navigationItems = [
         { icon: <UserIcon />, label: "Profile" },
@@ -65,10 +66,12 @@ export default function TopItems() {
     ];
 
     const nextDiv = (index: number) => {
-        setActiveIndex(() => (index));
+        setActiveIndex(index);
     };
 
-
+    useEffect(() => {
+        contentPanelRef.current?.scrollTo({ top: 0, behavior: "auto" });
+    }, [activeIndex]);
 
     return (
         <div className="flex h-dvh flex-col overflow-hidden text-black"
@@ -96,7 +99,9 @@ export default function TopItems() {
                         </Button>
                     ))}
                 </nav>
-                <main className="mx-3 mb-3 flex min-h-0 flex-1 justify-center overflow-y-auto overflow-x-hidden border-2 border-black bg-[#FFFFE4] shadow-[4px_4px_0_0_#000] lg:m-4 lg:ml-6 lg:mr-8"
+                <main
+                     ref={contentPanelRef}
+                     className="mx-3 mb-3 flex min-h-0 flex-1 justify-center overflow-y-auto overflow-x-hidden border-2 border-black bg-[#FFFFE4] shadow-[4px_4px_0_0_#000] lg:m-4 lg:ml-6 lg:mr-8"
                      style={{
                          backgroundColor: "#FFF7E4",
                          backgroundRepeat: 'no-repeat',
@@ -105,7 +110,7 @@ export default function TopItems() {
                     <AnimatePresence mode="wait">
                         <motion.div
                             key={activeIndex}
-                            className="flex w-full min-w-0 justify-center p-4 sm:p-6"
+                            className="flex w-full min-w-0 items-start justify-center p-4 sm:p-6"
                             initial={{ opacity: 0, y: 80 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -80 }}

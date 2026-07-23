@@ -24,7 +24,7 @@ const musicTasteArchetypes = [
 ];
 
 export function Welcome() {
-    return <div className="flex w-full flex-col items-center justify-center text-center">
+    return <div className="flex min-h-full w-full flex-col items-center justify-center text-center">
         <div className="flex flex-col items-center sm:flex-row sm:flex-wrap sm:justify-center">
             <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight text-balance sm:text-6xl lg:text-8xl">Welcome, </h1>
             < UserProfile/>
@@ -72,7 +72,7 @@ export function Popularity() {
     const handleAnimationComplete = () => { setAnimationFinished(true); };
 
     return (
-        <div className="mx-auto flex w-full max-w-4xl flex-col items-center justify-center">
+        <div className="mx-auto flex w-full max-w-4xl flex-col items-center">
             <div className="mb-8 flex flex-wrap items-center justify-center text-center">
                 <h4 className="scroll-m-20 text-2xl font-bold tracking-tight sm:text-3xl">Your popularity score is </h4>
                 <h4 className="scroll-m-20 pl-2 text-2xl font-black tracking-tight sm:pl-4 sm:text-3xl">
@@ -169,7 +169,7 @@ export function Recommendations() {
     };
 
     return (
-        <div className="flex w-full max-w-4xl flex-col justify-center">
+        <div className="flex w-full max-w-4xl flex-col">
             <h4 className="scroll-m-20 pb-8 text-xl font-semibold tracking-tight sm:pb-10 sm:text-3xl">Tired of the same 10 songs?
                 Adjust the dials below to generate a playlist that actually gets your taste. </h4>
             <h4 className="scroll-m-20 text-sm font-semibold tracking-tight pb-4 text-center"> Generate recommendations based on your: </h4>
@@ -393,7 +393,7 @@ export function Summary({ items }: { items: (Map<string, [string, Set<string>]> 
     const [archetype, description] = musicTasteArchetypes[Math.floor(popularityScore / 10)];
 
     return (
-        <div className="flex w-full min-w-0 flex-col justify-center">
+        <div className="flex w-full min-w-0 flex-col">
             <MusicSummary popularityScore={popularityScore} topArtist={topArtist} topTrack={topTrack} archetype={archetype} description={description} />
         </div>
     );
