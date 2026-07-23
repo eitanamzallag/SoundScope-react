@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { motion, useMotionValue, useTransform } from "motion/react";
 import { animate } from "motion"
-import { Download } from "lucide-react";
+import { Download, LoaderCircle } from "lucide-react";
 import { toPng } from "html-to-image";
 import { useEffect, useRef, useState } from "react";
 
@@ -142,6 +142,8 @@ export function Recommendations() {
     type SeedOption = 'artists' | 'tracks' | 'surprise';
     const [activeSeed, setActiveSeed] = useState<SeedOption>('artists');
     const [playlistLength, setPlaylistLength] = useState<number>(10);
+    const [isGenerating, setIsGenerating] = useState(false);
+    const [generationError, setGenerationError] = useState<string | null>(null);
 
     const seeds: { id: SeedOption; label: string }[] = [
         { id: 'artists', label: 'Top Artists' },
@@ -149,6 +151,22 @@ export function Recommendations() {
         { id: 'surprise', label: 'Surprise Me' },
     ];
     const lengths = [10, 20, 30];
+
+    const generatePlaylist = async () => {
+        if (isGenerating) return;
+
+        setIsGenerating(true);
+        setGenerationError(null);
+
+        try {
+            await createRecommendationPlaylist(playlistLength, activeSeed);
+        } catch (error) {
+            console.error("Failed to generate playlist:", error);
+            setGenerationError("Could not generate the playlist. Please try again.");
+        } finally {
+            setIsGenerating(false);
+        }
+    };
 
     return (
         <div className="flex flex-col justify-center max-w-4xl">
@@ -160,8 +178,9 @@ export function Recommendations() {
                     <button
                         key={seed.id}
                         onClick={() => setActiveSeed(seed.id)}
+                        disabled={isGenerating}
                         className={`
-                            px-4 py-2 text-sm font-mono border-2 border-black transition-all
+                            px-4 py-2 text-sm font-mono border-2 border-black transition-all disabled:cursor-wait disabled:opacity-60
                             ${activeSeed === seed.id
                             ? 'bg-[#fdc6ff] shadow-[4px_4px_0_0_#000] -translate-y-1'
                             : 'bg-white hover:bg-gray-50 active:translate-y-0'
@@ -178,8 +197,9 @@ export function Recommendations() {
                     <button
                         key={len}
                         onClick={() => setPlaylistLength(len)}
+                        disabled={isGenerating}
                         className={`
-              px-6 py-2 text-sm font-mono border-2 border-black transition-all
+              px-6 py-2 text-sm font-mono border-2 border-black transition-all disabled:cursor-wait disabled:opacity-60
               ${playlistLength === len
                             ? 'bg-[#fdc6ff] shadow-[4px_4px_0_0_#000] -translate-y-1'
                             : 'bg-white hover:bg-gray-50 active:translate-y-0 shadow-none'
@@ -190,10 +210,21 @@ export function Recommendations() {
                     </button>
                 ))}
             </div>
-            <button onClick={() => createRecommendationPlaylist(playlistLength, activeSeed)} className="
-              px-6 py-2 text-sm font-mono border-2 border-black transition-all bg-[#89b4fa]">
-                Generate Playlist
+            <button
+                type="button"
+                onClick={generatePlaylist}
+                disabled={isGenerating}
+                className="flex items-center justify-center gap-2 px-6 py-3 text-sm font-mono font-bold border-2 border-black bg-[#89b4fa] shadow-[4px_4px_0_0_#000] transition-all hover:translate-x-1 hover:translate-y-1 hover:shadow-none disabled:cursor-wait disabled:opacity-70"
+            >
+                {isGenerating && <LoaderCircle size={18} className="animate-spin" aria-hidden="true" />}
+                {isGenerating ? "Generating playlist..." : "Generate Playlist"}
             </button>
+
+            {generationError && (
+                <p role="alert" className="pt-4 text-center font-mono text-sm font-bold text-red-700">
+                    {generationError}
+                </p>
+            )}
             </div>
     )
 }
@@ -331,7 +362,7 @@ export function MusicSummary({ popularityScore, topArtist, topTrack, archetype, 
                 type="button"
                 onClick={saveAsImage}
                 disabled={isSaving}
-                className="flex items-center gap-2 px-6 py-3 border-2 border-black bg-[#89b4fa] font-mono font-bold uppercase shadow-[4px_4px_0_0_#000] transition-all hover:translate-x-1 hover:translate-y-1 hover:shadow-none disabled:cursor-wait disabled:opacity-60"
+                className="flex items-center gap-2 px-6 py-3 border-2 border-black bg-[#fdc6ff] font-mono font-bold uppercase shadow-[4px_4px_0_0_#000] transition-all hover:translate-x-1 hover:translate-y-1 hover:shadow-none disabled:cursor-wait disabled:opacity-60"
             >
                 <Download size={18} aria-hidden="true" />
                 {isSaving ? "Saving..." : "Save as image"}
