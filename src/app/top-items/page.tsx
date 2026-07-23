@@ -6,6 +6,7 @@ import { Welcome, Popularity, Recommendations, TopItemsSection, Summary } from "
 import { Button } from "@/components/ui/button";
 import { PreloadItems } from "@/app/api/spotifyAPI";
 import {ChartLineIcon, Disc3Icon, HeadphonesIcon, MicVocalIcon, ScrollTextIcon, UserIcon} from "lucide-react";
+import { ProjectInfo } from "@/components/project-info";
 export default function TopItems() {
     const [activeIndex, setActiveIndex] = useState(0);
     const [topArtists, setTopArtists] = useState<(Map<string, [string, Set<string>]> | undefined)[]>();
@@ -105,6 +106,7 @@ export default function TopItems() {
                 </div>
             </div>
             <Footer />
+            <ProjectInfo />
       </div>
     );
 }
