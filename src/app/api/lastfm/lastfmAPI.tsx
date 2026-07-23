@@ -26,10 +26,7 @@ async function getSimilarSong(track: string, artist: string): Promise<string> {
         const index = Math.floor(data.similartracks.track.length / factor);
         query = data.similartracks.track[index].artist.name + " " + data.similartracks.track[index].name;
     }
-    catch (error) {
-        console.log(error);
-        console.log(track);
-    }
+    catch {}
     return query;
 }
 
@@ -39,10 +36,7 @@ async function getArtistTopTrack(artist: string): Promise<string> {
         const data = await callLastFm("artist.getTopTracks", { artist: artist });
         track = data.toptracks.track[0].name;
     }
-    catch (error) {
-        console.log(error);
-        console.log(track);
-    }
+    catch {}
     return track;
 }
 
@@ -53,10 +47,8 @@ export async function createRecommendations(limit: number, seed: string): Promis
     if (seed == "surprise") {
         seed = Math.random() < 0.5 ? "artists" : "tracks"; // 50/50 chance of each
     }
-    console.log(seed);
     const data = await getTopItems(seed, "medium_term", limit, token);
     let similar: string = "";
-    console.log(data);
     for (let i = 0; i < data.items.length; i++) {
         if (seed == "tracks") {
             similar = await getSimilarSong(data.items[i].name, data.items[i].artists[0].name);
@@ -105,6 +97,5 @@ export async function getTopTags(limit: number) {
             tagSet = tagSet.union(songTags);
         } else { break; }
     }
-    console.log(tagSet);
     return tagSet;
 }

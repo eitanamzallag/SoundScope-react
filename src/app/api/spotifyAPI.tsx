@@ -80,8 +80,7 @@ export function UserProfile() {
                 setImageUrl(data.images?.[0]?.url ?? null);
                 setStatus("success");
             })
-            .catch(error => {
-                console.error("Failed to load Spotify profile:", error);
+            .catch(() => {
                 setStatus("error");
             });
     }, [attempt]);
@@ -150,9 +149,8 @@ export async function PreloadItems({ type, timeRange }: TopItemsProps): Promise<
                     ? trackTags
                     : getTags(3, item.artists[0].name);
             });
-        } catch (error) {
+        } catch {
             tagsUnavailable = true;
-            console.warn(`Last.fm tags unavailable for ${item.name}:`, error);
         }
 
         const imageUrl = type === "tracks"
@@ -287,7 +285,6 @@ async function findSong(query: string): Promise<string | null> {
         return songUri || null;
     } catch (error) {
         if (isSpotifyAuthError(error)) throw error;
-        console.error(`Search failed for: ${query}`, error);
         return null;
     }
 }

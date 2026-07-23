@@ -188,7 +188,6 @@ export function Recommendations() {
             const result = await createRecommendationPlaylist(playlistLength, activeSeed);
             setPlaylistResult(result);
         } catch (error) {
-            console.error("Failed to generate playlist:", error);
             if (isSpotifyAuthError(error)) {
                 setAuthRequired(true);
             } else {
@@ -376,8 +375,7 @@ export function MusicSummary({ popularityScore, topArtist, topTrack, archetype, 
             link.download = "soundscope-summary.png";
             link.href = dataUrl;
             link.click();
-        } catch (error) {
-            console.error("Failed to save summary as an image:", error);
+        } catch {
             setSaveError("Could not save the image. Please try again.");
         } finally {
             setIsSaving(false);

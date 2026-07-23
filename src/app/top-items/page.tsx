@@ -55,8 +55,6 @@ export default function TopItems() {
             } else {
                 if (isSpotifyAuthError(artistsResult.reason)) {
                     setAuthRequired(true);
-                } else {
-                    console.error("Failed to preload artists:", artistsResult.reason);
                 }
                 setTopArtists({ status: "error" });
             }
@@ -66,8 +64,6 @@ export default function TopItems() {
             } else {
                 if (isSpotifyAuthError(tracksResult.reason)) {
                     setAuthRequired(true);
-                } else {
-                    console.error("Failed to preload tracks:", tracksResult.reason);
                 }
                 setTopTracks({ status: "error" });
             }

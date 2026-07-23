@@ -40,7 +40,6 @@ export async function GET(request: Request) {
             const text = await response.text();
             const shouldRetry = TRANSIENT_STATUSES.has(response.status) && attempt < MAX_ATTEMPTS - 1;
             if (!shouldRetry) {
-                console.error("Last.fm error response:", response.status, text);
                 return Response.json({ error: text || "Last.fm request failed." }, { status: response.status });
             }
 
@@ -49,10 +48,9 @@ export async function GET(request: Request) {
                 ? retryAfter * 1_000
                 : 300 * (2 ** attempt) + Math.random() * 200;
             await wait(backoff);
-        } catch (error) {
+        } catch {
             const isLastAttempt = attempt === MAX_ATTEMPTS - 1;
             if (isLastAttempt) {
-                console.error("Last.fm request failed:", error);
                 return Response.json({ error: "Last.fm did not respond in time." }, { status: 504 });
             }
 

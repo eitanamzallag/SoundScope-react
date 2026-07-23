@@ -43,8 +43,7 @@ export default function CallbackPage() {
                 sessionStorage.setItem('access_token', data.access_token);
                 window.location.href = '/top-items';
             })
-            .catch(callbackError => {
-                console.error("Spotify callback failed:", callbackError);
+            .catch(() => {
                 setError(true);
             });
     }, []);
