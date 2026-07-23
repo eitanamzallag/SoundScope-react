@@ -4,13 +4,22 @@ import { motion, AnimatePresence } from "framer-motion";
 import Footer from "@/components/ui/Footer";
 import { Welcome, Popularity, Recommendations, TopItemsSection, Summary } from "@/components/top-items-divs";
 import { Button } from "@/components/ui/button";
-import { PreloadItems } from "@/app/api/spotifyAPI";
+import { isSpotifyAuthError, PreloadedItemsMap, PreloadItems } from "@/app/api/spotifyAPI";
 import {ChartLineIcon, Disc3Icon, HeadphonesIcon, MicVocalIcon, ScrollTextIcon, UserIcon} from "lucide-react";
 import { ProjectInfo } from "@/components/project-info";
+import { SectionErrorState, SpotifyAuthState, TopItemsSkeleton } from "@/components/async-states";
+
+type SectionState<T> =
+    | { status: "loading" }
+    | { status: "success"; data: T }
+    | { status: "error" };
+
 export default function TopItems() {
     const [activeIndex, setActiveIndex] = useState(0);
-    const [topArtists, setTopArtists] = useState<(Map<string, [string, Set<string>]> | undefined)[]>();
-    const [topTracks, setTopTracks] = useState<(Map<string, [string, Set<string>]> | undefined)[]>();
+    const [topArtists, setTopArtists] = useState<SectionState<PreloadedItemsMap[]>>({ status: "loading" });
+    const [topTracks, setTopTracks] = useState<SectionState<PreloadedItemsMap[]>>({ status: "loading" });
+    const [authRequired, setAuthRequired] = useState(false);
+    const [reloadKey, setReloadKey] = useState(0);
     const contentPanelRef = useRef<HTMLElement>(null);
 
     const navigationItems = [
@@ -24,45 +33,74 @@ export default function TopItems() {
 
     useEffect(() => {
         async function loadAllSpotifyData() {
-            console.log("starting preload");
+            setTopArtists({ status: "loading" });
+            setTopTracks({ status: "loading" });
+            setAuthRequired(false);
 
-            try {
-                // define data requests as promises
-                const artistPromises = [
+            const artistsRequest = Promise.all([
                     PreloadItems({type: "artists", timeRange: "short_term"}),
                     PreloadItems({ type: "artists", timeRange: "medium_term" }),
                     PreloadItems({ type: "artists", timeRange: "long_term" })
-                ];
-
-                const trackPromises = [
+            ]);
+            const tracksRequest = Promise.all([
                     PreloadItems({ type: "tracks", timeRange: "short_term" }),
                     PreloadItems({ type: "tracks", timeRange: "medium_term" }),
                     PreloadItems({ type: "tracks", timeRange: "long_term" })
-                ];
+            ]);
 
-                // wait for all 6 Maps to be fully populated
-                const [artists, tracks] = await Promise.all([
-                    Promise.all(artistPromises),
-                    Promise.all(trackPromises)
-                ]);
+            const [artistsResult, tracksResult] = await Promise.allSettled([artistsRequest, tracksRequest]);
 
-                setTopArtists(artists);
-                setTopTracks(tracks);
-            } catch (error) {
-                console.error("Failed to preload items:", error);
+            if (artistsResult.status === "fulfilled") {
+                setTopArtists({ status: "success", data: artistsResult.value });
+            } else {
+                if (isSpotifyAuthError(artistsResult.reason)) {
+                    setAuthRequired(true);
+                } else {
+                    console.error("Failed to preload artists:", artistsResult.reason);
+                }
+                setTopArtists({ status: "error" });
+            }
+
+            if (tracksResult.status === "fulfilled") {
+                setTopTracks({ status: "success", data: tracksResult.value });
+            } else {
+                if (isSpotifyAuthError(tracksResult.reason)) {
+                    setAuthRequired(true);
+                } else {
+                    console.error("Failed to preload tracks:", tracksResult.reason);
+                }
+                setTopTracks({ status: "error" });
             }
         }
 
         loadAllSpotifyData();
-    }, []);
+    }, [reloadKey]);
 
-    const divs: React.ReactNode[] = [
+    const retryPreload = () => setReloadKey(current => current + 1);
+    const loadingState = <TopItemsSkeleton />;
+    const artistsState = topArtists.status === "success"
+        ? <TopItemsSection items={topArtists.data} type="artists" />
+        : topArtists.status === "error"
+            ? <SectionErrorState title="We couldn’t load your top artists" message="Spotify didn’t respond. Your other sections may still be available." onRetry={retryPreload} />
+            : loadingState;
+    const tracksState = topTracks.status === "success"
+        ? <TopItemsSection items={topTracks.data} type="tracks" />
+        : topTracks.status === "error"
+            ? <SectionErrorState title="We couldn’t load your top tracks" message="Spotify didn’t respond. Your other sections may still be available." onRetry={retryPreload} />
+            : loadingState;
+    const summaryState = topTracks.status === "success"
+        ? <Summary items={topTracks.data} />
+        : topTracks.status === "error"
+            ? <SectionErrorState title="We couldn’t build your summary" message="Your top tracks are unavailable right now." onRetry={retryPreload} />
+            : loadingState;
+
+    const divs: React.ReactNode[] = authRequired ? Array(6).fill(<SpotifyAuthState />) : [
         <Welcome key="welcome" />,
         <Popularity key="pop" />,
         <Recommendations key="rec" />,
-        topArtists ? <TopItemsSection items={topArtists} type="artists" /> : <div>Loading Artists...</div>,
-        topTracks ? <TopItemsSection items={topTracks} type="tracks" /> : <div>Loading Tracks...</div>,
-        topTracks ? <Summary items={topTracks} /> : <div>Loading Summary...</div>,
+        artistsState,
+        tracksState,
+        summaryState,
     ];
 
     const nextDiv = (index: number) => {

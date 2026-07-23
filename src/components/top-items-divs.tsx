@@ -1,14 +1,21 @@
 "use client";
 
-import {createRecommendationPlaylist, TopItems as TopItemsList, UserProfile} from "../app/api/spotifyAPI";
+import {
+    createRecommendationPlaylist,
+    isSpotifyAuthError,
+    PreloadedItemsMap,
+    TopItems as TopItemsList,
+    UserProfile,
+} from "../app/api/spotifyAPI";
 import {usePopularity} from "../app/api/spotifyAPI";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { motion, useMotionValue, useTransform } from "motion/react";
 import { animate } from "motion"
-import { Download, LoaderCircle } from "lucide-react";
+import { CheckCircle2, Download, ExternalLink, LoaderCircle } from "lucide-react";
 import { toPng } from "html-to-image";
 import { useEffect, useRef, useState } from "react";
+import { EmptyState, SectionErrorState, SpotifyAuthState, TopItemsSkeleton } from "@/components/async-states";
 
 const musicTasteArchetypes = [
     ["The Phantom Listener 👻", "You’re basically an underground legend. Even Spotify doesn’t know your taste exists."],
@@ -56,7 +63,25 @@ function PopularityAnimation({ popularity, onComplete }: PopularityAnimationProp
 
 
 export function Popularity() {
-    const [popularityScore, artistPopularity] = usePopularity(50);
+    const { popularityScore, artistPopularity, status, error, retry } = usePopularity(50);
+    const [animationFinished, setAnimationFinished] = useState(false);
+    const handleAnimationComplete = () => { setAnimationFinished(true); };
+
+    if (status === "loading") return <TopItemsSkeleton count={2} />;
+    if (status === "error") {
+        return isSpotifyAuthError(error)
+            ? <SpotifyAuthState />
+            : <SectionErrorState title="We couldn’t calculate your popularity" message="Spotify didn’t respond. Please try again." onRetry={retry} />;
+    }
+    if (popularityScore === null || artistPopularity.length === 0) {
+        return (
+            <EmptyState
+                title="Not enough listening history yet"
+                message="Spotify needs more listening activity before SoundScope can calculate this score."
+            />
+        );
+    }
+
     const leastPopular = artistPopularity!.slice(-5);
     const mostPopular = artistPopularity!.slice(0,5);
     let archetype: string;
@@ -67,9 +92,6 @@ export function Popularity() {
     else {
         [archetype, description] = musicTasteArchetypes[musicTasteArchetypes!.length - 1];
     }
-
-    const [animationFinished, setAnimationFinished] = useState(false);
-    const handleAnimationComplete = () => { setAnimationFinished(true); };
 
     return (
         <div className="mx-auto flex w-full max-w-4xl flex-col items-center">
@@ -144,6 +166,8 @@ export function Recommendations() {
     const [playlistLength, setPlaylistLength] = useState<number>(10);
     const [isGenerating, setIsGenerating] = useState(false);
     const [generationError, setGenerationError] = useState<string | null>(null);
+    const [playlistResult, setPlaylistResult] = useState<Awaited<ReturnType<typeof createRecommendationPlaylist>> | null>(null);
+    const [authRequired, setAuthRequired] = useState(false);
 
     const seeds: { id: SeedOption; label: string }[] = [
         { id: 'artists', label: 'Top Artists' },
@@ -157,16 +181,25 @@ export function Recommendations() {
 
         setIsGenerating(true);
         setGenerationError(null);
+        setPlaylistResult(null);
+        setAuthRequired(false);
 
         try {
-            await createRecommendationPlaylist(playlistLength, activeSeed);
+            const result = await createRecommendationPlaylist(playlistLength, activeSeed);
+            setPlaylistResult(result);
         } catch (error) {
             console.error("Failed to generate playlist:", error);
-            setGenerationError("Could not generate the playlist. Please try again.");
+            if (isSpotifyAuthError(error)) {
+                setAuthRequired(true);
+            } else {
+                setGenerationError("Could not generate the playlist. Please try again.");
+            }
         } finally {
             setIsGenerating(false);
         }
     };
+
+    if (authRequired) return <SpotifyAuthState />;
 
     return (
         <div className="flex w-full max-w-4xl flex-col">
@@ -225,30 +258,58 @@ export function Recommendations() {
                     {generationError}
                 </p>
             )}
+
+            {playlistResult && (
+                <Card aria-live="polite" className="mt-6 border-2 border-black bg-[#caffbf] shadow-[6px_6px_0_0_#000]">
+                    <CardHeader>
+                        <CheckCircle2 aria-hidden="true" />
+                        <CardTitle className="text-2xl font-black">Playlist created!</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-5">
+                        <p>
+                            {playlistResult.added === playlistResult.requested
+                                ? `${playlistResult.added} tracks were added to your new playlist.`
+                                : `${playlistResult.added} of ${playlistResult.requested} recommendations were matched on Spotify.`}
+                        </p>
+                        <a
+                            href={playlistResult.url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-2 border-2 border-black bg-black px-4 py-2 font-bold uppercase text-white"
+                        >
+                            Open in Spotify
+                            <ExternalLink size={16} aria-hidden="true" />
+                        </a>
+                    </CardContent>
+                </Card>
+            )}
             </div>
     )
 }
 
-export function TopItemsSection({ items, type }: { items: (Map<string, [string, Set<string>]> | undefined)[], type: string }) {
-    const serializedItemsShort = Array.from(items[0]!.entries()).map(([itemName, [imageUrl, tagsSet]]) => {
+export function TopItemsSection({ items, type }: { items: PreloadedItemsMap[], type: string }) {
+    const serializedItemsShort = Array.from(items[0].entries()).map(([itemName, item]) => {
         return {
             name: itemName,
-            imageUrl: imageUrl,
-            tags: Array.from(tagsSet) // Converts Set<string> -> string[]
+            imageUrl: item.imageUrl,
+            tags: Array.from(item.tags),
+            tagsUnavailable: item.tagsUnavailable,
         };
     });
-    const serializedItemsMedium = Array.from(items[1]!.entries()).map(([itemName, [imageUrl, tagsSet]]) => {
+    const serializedItemsMedium = Array.from(items[1].entries()).map(([itemName, item]) => {
         return {
             name: itemName,
-            imageUrl: imageUrl,
-            tags: Array.from(tagsSet) // Converts Set<string> -> string[]
+            imageUrl: item.imageUrl,
+            tags: Array.from(item.tags),
+            tagsUnavailable: item.tagsUnavailable,
         };
     });
-    const serializedItemsLong = Array.from(items[2]!.entries()).map(([itemName, [imageUrl, tagsSet]]) => {
+    const serializedItemsLong = Array.from(items[2].entries()).map(([itemName, item]) => {
         return {
             name: itemName,
-            imageUrl: imageUrl,
-            tags: Array.from(tagsSet) // converts Set<string> -> string[]
+            imageUrl: item.imageUrl,
+            tags: Array.from(item.tags),
+            tagsUnavailable: item.tagsUnavailable,
         };
     });
     return(
@@ -384,13 +445,28 @@ export function MusicSummary({ popularityScore, topArtist, topTrack, archetype, 
     );
 }
 
-export function Summary({ items }: { items: (Map<string, [string, Set<string>]> | undefined)[]; }) {
-    const [popularityScore, artistPopularity] = usePopularity(50);
-    if (popularityScore === null) return <div>Calculating...</div>;
+export function Summary({ items }: { items: PreloadedItemsMap[]; }) {
+    const { popularityScore, artistPopularity, status, error, retry } = usePopularity(50);
+
+    if (status === "loading") return <TopItemsSkeleton count={2} />;
+    if (status === "error") {
+        return isSpotifyAuthError(error)
+            ? <SpotifyAuthState />
+            : <SectionErrorState title="We couldn’t build your summary" message="Spotify didn’t respond. Please try again." onRetry={retry} />;
+    }
+    if (popularityScore === null || artistPopularity.length === 0 || items[0].size === 0) {
+        return (
+            <EmptyState
+                title="Not enough listening history yet"
+                message="Keep listening on Spotify and return when there is enough activity to build your summary."
+            />
+        );
+    }
 
     const topArtist = artistPopularity[0][1];
-    const topTrack: string = items[0] ? Array.from(items[0].keys())[0] : "Loading...";
-    const [archetype, description] = musicTasteArchetypes[Math.floor(popularityScore / 10)];
+    const topTrack = Array.from(items[0].keys())[0];
+    const archetypeIndex = Math.min(musicTasteArchetypes.length - 1, Math.floor(popularityScore / 10));
+    const [archetype, description] = musicTasteArchetypes[archetypeIndex];
 
     return (
         <div className="flex w-full min-w-0 flex-col">

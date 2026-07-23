@@ -4,7 +4,17 @@ import { getTopItems } from "../spotifyAPI"
 async function callLastFm<T = any>(method: string, params: Record<string, string>): Promise<T> {
     const searchParams = new URLSearchParams({ method, ...params });
     const response = await fetch(`/api/lastfm?${searchParams.toString()}`);
-    return await response.json() as Promise<T>;
+    const data = await response.json();
+
+    if (!response.ok) {
+        throw new Error(data?.error || `Last.fm request failed with status ${response.status}`);
+    }
+
+    if (data?.error) {
+        throw new Error(data.message || `Last.fm error ${data.error}`);
+    }
+
+    return data as T;
 }
 
 async function getSimilarSong(track: string, artist: string): Promise<string> {
